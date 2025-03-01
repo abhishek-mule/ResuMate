@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge"
 
 export function ApplicationTracker() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, threshold: 0.1 })
+  const isInView = useInView(ref, { once: true })
   
   const applications = {
     active: [

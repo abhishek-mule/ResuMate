@@ -19,7 +19,7 @@ export function ResumeOverview() {
   ])
   
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, threshold: 0.1 })
+  const isInView = useInView(ref, { once: true, amount: 0.1 })
 
   const handleCreateResume = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()

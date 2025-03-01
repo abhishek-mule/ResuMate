@@ -11,8 +11,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 
 export function JobMatches() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, threshold: 0.1 })
-  
+  const isInView = useInView(ref, { once: true, amount: 0.1 })
+
   const jobs = [
     {
       id: 1,
