@@ -26,6 +26,7 @@ export function ResumeOverview() {
     const formData = new FormData(e.currentTarget)
     const name = formData.get("name") as string
     
+    
     if (name) {
       setResumes([...resumes, { id: resumes.length + 1, name, lastUpdated: "Just now", isNew: true }])
       setOpen(false)
