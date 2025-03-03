@@ -4,6 +4,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Button } from "@/components/ui/button"
 import { FileText, Upload, Download, Copy, Sparkles } from "lucide-react"
+import { AIResumeForm } from "@/components/resume-builder/ai-resume-form"
 
 export default function ResumeBuilderPage() {
   return (
@@ -67,56 +68,47 @@ export default function ResumeBuilderPage() {
         </TabsContent>
         
         <TabsContent value="content" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center justify-between">
-                <span>Resume Content</span>
-                <Button size="sm" className="gap-1">
-                  <Sparkles className="h-4 w-4" /> AI Enhance
-                </Button>
-              </CardTitle>
-              <CardDescription>
-                Add and edit your resume content sections
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-medium mb-2">Personal Information</h3>
-                  <p className="text-sm text-muted-foreground">Name, contact details, location, and professional links</p>
-                  <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center">
+                  <span>Manual Resume Builder</span>
+                </CardTitle>
+                <CardDescription>
+                  Build your resume section by section
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="p-4 border rounded-md">
+                    <h3 className="font-medium mb-2">Personal Information</h3>
+                    <p className="text-sm text-muted-foreground">Name, contact details, location, and professional links</p>
+                    <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
+                  </div>
+                  
+                  <div className="p-4 border rounded-md">
+                    <h3 className="font-medium mb-2">Professional Summary</h3>
+                    <p className="text-sm text-muted-foreground">Brief overview of your experience, skills, and career goals</p>
+                    <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
+                  </div>
+                  
+                  <div className="p-4 border rounded-md">
+                    <h3 className="font-medium mb-2">Work Experience</h3>
+                    <p className="text-sm text-muted-foreground">Your employment history, achievements, and responsibilities</p>
+                    <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
+                  </div>
+                  
+                  <Button className="w-full gap-2">
+                    <FileText className="h-4 w-4" /> Add New Section
+                  </Button>
                 </div>
-                
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-medium mb-2">Professional Summary</h3>
-                  <p className="text-sm text-muted-foreground">Brief overview of your experience, skills, and career goals</p>
-                  <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
-                </div>
-                
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-medium mb-2">Work Experience</h3>
-                  <p className="text-sm text-muted-foreground">Your employment history, achievements, and responsibilities</p>
-                  <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
-                </div>
-                
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-medium mb-2">Education</h3>
-                  <p className="text-sm text-muted-foreground">Academic qualifications, certifications, and training</p>
-                  <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
-                </div>
-                
-                <div className="p-4 border rounded-md">
-                  <h3 className="font-medium mb-2">Skills</h3>
-                  <p className="text-sm text-muted-foreground">Technical, soft, and industry-specific skills</p>
-                  <Button variant="link" className="p-0 h-auto text-sm">Edit Section</Button>
-                </div>
-                
-                <Button className="w-full gap-2">
-                  <FileText className="h-4 w-4" /> Add New Section
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+
+            <div className="space-y-6">
+              <AIResumeForm />
+            </div>
+          </div>
         </TabsContent>
         
         <TabsContent value="design" className="space-y-6">

@@ -1,8 +1,8 @@
 "use client"
 
 import { useRef } from "react"
-import { motion, useInView } from "framer-motion"
-import { CheckCircle2, Clock, FileText, MoreHorizontal, XCircle, Calendar, BarChart } from "lucide-react"
+import { motion, useInView, AnimatePresence } from "framer-motion"
+import { CheckCircle2, Clock, FileText, MoreHorizontal, XCircle, Calendar, BarChart, Plus, ArrowRight } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge"
 
 export function ApplicationTracker() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true })
+  const isInView = useInView(ref, { once: true, threshold: 0.1 })
   
   const applications = {
     active: [
@@ -66,6 +66,11 @@ export function ApplicationTracker() {
     visible: { opacity: 1, y: 0, transition: { duration: 0.5 } }
   }
 
+  const itemVariants = {
+    hidden: { opacity: 0, x: -20 },
+    visible: { opacity: 1, x: 0, transition: { duration: 0.3 } }
+  }
+
   return (
     <motion.div
       ref={ref}
@@ -83,111 +88,130 @@ export function ApplicationTracker() {
     >
       <Card className="overflow-hidden border-2 hover:border-primary/20 transition-all duration-300 shadow-sm hover:shadow-md">
         <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10 pb-4">
-          <div className="flex items-center justify-between">
-            <motion.div variants={cardVariants}>
-              <CardTitle className="flex items-center gap-2">
-                <BarChart className="h-5 w-5 text-primary" />
-                <span>Application Tracker</span>
-              </CardTitle>
-              <CardDescription>
-                Track and manage your job applications in one place.
-              </CardDescription>
-            </motion.div>
-            <motion.div variants={cardVariants}>
-              <Button 
-                size="sm" 
-                variant="outline" 
-                className="h-8 gap-1 border-primary/30 hover:bg-primary/10 hover:text-primary"
-              >
-                Add Application
-              </Button>
-            </motion.div>
-          </div>
+          <motion.div variants={cardVariants}>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart className="h-5 w-5 text-primary" />
+              <span>Application Tracker</span>
+            </CardTitle>
+            <CardDescription>
+              Track and manage your job applications in one place.
+            </CardDescription>
+          </motion.div>
         </CardHeader>
         <CardContent className="p-4">
-          <Tabs defaultValue="active">
+          <Tabs defaultValue="active" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-4">
-              <TabsTrigger value="active" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                Active ({applications.active.length})
-              </TabsTrigger>
-              <TabsTrigger value="completed" className="data-[state=active]:bg-primary/20 data-[state=active]:text-primary">
-                Completed ({applications.completed.length})
-              </TabsTrigger>
+              <TabsTrigger value="active">Active ({applications.active.length})</TabsTrigger>
+              <TabsTrigger value="completed">Completed ({applications.completed.length})</TabsTrigger>
             </TabsList>
-            <TabsContent value="active" className="space-y-3 mt-0">
-              {applications.active.map((app, index) => (
-                <motion.div 
-                  key={app.id} 
-                  variants={cardVariants}
-                  whileHover={{ scale: 1.01 }}
-                  className="group"
-                >
-                  <ApplicationItem application={app} />
-                </motion.div>
-              ))}
+            
+            <TabsContent value="active" className="space-y-3">
+              <AnimatePresence>
+                {applications.active.map((app, index) => (
+                  <motion.div 
+                    key={app.id} 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.01, y: -2 }}
+                    className="group"
+                  >
+                    <div className="flex items-center justify-between p-3 border rounded-md bg-card hover:bg-muted/30 transition-all duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-full min-h-[2.5rem] ${app.color} rounded-full`}></div>
+                        <div>
+                          <p className="font-medium">{app.position}</p>
+                          <p className="text-sm text-muted-foreground">{app.company}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="flex items-center gap-1">
+                            {app.icon}
+                            <span className="text-sm font-medium">{app.status}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{app.date}</p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Update Status</DropdownMenuItem>
+                            <DropdownMenuItem>Add Notes</DropdownMenuItem>
+                            <DropdownMenuItem className="text-red-500">Remove</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </TabsContent>
-            <TabsContent value="completed" className="space-y-3 mt-0">
-              {applications.completed.map((app, index) => (
-                <motion.div 
-                  key={app.id} 
-                  variants={cardVariants}
-                  whileHover={{ scale: 1.01 }}
-                  className="group"
-                >
-                  <ApplicationItem application={app} />
-                </motion.div>
-              ))}
+            
+            <TabsContent value="completed" className="space-y-3">
+              <AnimatePresence>
+                {applications.completed.map((app, index) => (
+                  <motion.div 
+                    key={app.id} 
+                    variants={itemVariants}
+                    whileHover={{ scale: 1.01, y: -2 }}
+                    className="group"
+                  >
+                    <div className="flex items-center justify-between p-3 border rounded-md bg-card hover:bg-muted/30 transition-all duration-300">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-2 h-full min-h-[2.5rem] ${app.color} rounded-full`}></div>
+                        <div>
+                          <p className="font-medium">{app.position}</p>
+                          <p className="text-sm text-muted-foreground">{app.company}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="text-right">
+                          <div className="flex items-center gap-1">
+                            {app.icon}
+                            <span className="text-sm font-medium">{app.status}</span>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{app.date}</p>
+                        </div>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuItem>View Details</DropdownMenuItem>
+                            <DropdownMenuItem>Add Notes</DropdownMenuItem>
+                            <DropdownMenuItem>Archive</DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </TabsContent>
           </Tabs>
+          
+          <motion.div 
+            variants={cardVariants}
+            className="mt-4 pt-4 border-t"
+          >
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full justify-center gap-1 hover:bg-primary/5 group relative overflow-hidden"
+            >
+              <span className="relative z-10 flex items-center">
+                <Plus className="h-4 w-4 mr-1" /> Add New Application
+              </span>
+              <span className="absolute inset-0 bg-primary/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+            </Button>
+          </motion.div>
         </CardContent>
       </Card>
     </motion.div>
-  )
-}
-
-function ApplicationItem({ application }: { application: any }) {
-  return (
-    <div className="flex items-center justify-between p-3 border rounded-md bg-card hover:bg-muted/30 transition-all duration-300 relative overflow-hidden group">
-      <div className="absolute top-0 left-0 w-1 h-full transition-all duration-300" style={{ backgroundColor: application.color }}></div>
-      
-      <div className="flex items-center gap-3 pl-2">
-        <div className="flex-shrink-0">
-          {application.icon}
-        </div>
-        <div>
-          <p className="font-medium">{application.position}</p>
-          <p className="text-xs text-muted-foreground">{application.company}</p>
-        </div>
-      </div>
-      <div className="flex items-center gap-2">
-        <div className="text-right">
-          <div className="flex items-center gap-1">
-            <Badge variant="outline" className="h-5 px-1.5 text-xs font-normal border-none bg-muted">
-              {application.status}
-            </Badge>
-          </div>
-          <div className="flex items-center text-xs text-muted-foreground mt-1">
-            <Calendar className="h-3 w-3 mr-1" />
-            <span>{application.date}</span>
-          </div>
-        </div>
-        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 hover:bg-muted">
-                <MoreHorizontal className="h-4 w-4" />
-                <span className="sr-only">Actions</span>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-40">
-              <DropdownMenuItem className="cursor-pointer">View Details</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Update Status</DropdownMenuItem>
-              <DropdownMenuItem className="cursor-pointer">Add Notes</DropdownMenuItem>
-              <DropdownMenuItem className="text-red-500 cursor-pointer">Remove</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </div>
-    </div>
   )
 }

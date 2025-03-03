@@ -9,7 +9,7 @@ import { Progress } from "@/components/ui/progress"
 
 export function ImprovementSuggestions() {
   const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.1 })
+  const isInView = useInView(ref, { once: true, threshold: 0.1 })
   
   const suggestions = [
     {
@@ -89,10 +89,10 @@ export function ImprovementSuggestions() {
               <motion.div 
                 key={suggestion.id} 
                 variants={cardVariants}
-                whileHover={{ scale: 1.01 }}
+                whileHover={{ scale: 1.01, y: -2 }}
                 className="group"
               >
-                <div className={`flex gap-3 p-3 border rounded-md transition-all duration-300 ${suggestion.bgColor} hover:shadow-sm`}>
+                <div className={`flex gap-3 p-3 border rounded-md transition-all duration-300 ${suggestion.bgColor} hover:shadow-sm group-hover:border-primary/20`}>
                   <div className="relative">
                     <Lightbulb className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
                     <motion.div
@@ -116,15 +116,34 @@ export function ImprovementSuggestions() {
                       </span>
                     </div>
                     <p className="text-sm text-muted-foreground">{suggestion.description}</p>
-                    <Button variant="link" className="h-auto p-0 mt-1 text-xs gap-1 group">
+                    <Button 
+                      variant="link" 
+                      className="h-auto p-0 mt-1 text-xs gap-1 group/btn"
+                    >
                       Apply Suggestion 
-                      <ArrowRight className="ml-1 h-3 w-3 transition-transform duration-300 group-hover:translate-x-1" />
+                      <ArrowRight className="ml-1 h-3 w-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
                     </Button>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
+          
+          <motion.div 
+            variants={cardVariants}
+            className="mt-4 pt-4 border-t"
+          >
+            <Button 
+              variant="outline" 
+              size="sm" 
+              className="w-full justify-center gap-1 hover:bg-primary/5 group relative overflow-hidden"
+            >
+              <span className="relative z-10 flex items-center">
+                <Zap className="h-4 w-4 mr-1" /> Get Full AI Analysis
+              </span>
+              <span className="absolute inset-0 bg-primary/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+            </Button>
+          </motion.div>
         </CardContent>
       </Card>
     </motion.div>

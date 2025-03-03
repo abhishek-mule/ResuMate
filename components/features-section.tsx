@@ -8,7 +8,11 @@ import {
   MessageSquare,
   Sparkles,
   Target,
-  Users
+  Users,
+  Zap,
+  CheckCircle,
+  ArrowRight,
+  Star
 } from "lucide-react"
 
 import {
@@ -18,17 +22,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
-import { ReactNode } from "react" // Add this import
+import { Button } from "@/components/ui/button"
 
-interface FeatureCardProps {
-  icon: ReactNode
-  title: string
-  description: string
-  benefits: string[]
-  index: number
-}
-
-const FeatureCard = ({ icon, title, description, benefits, index }: FeatureCardProps) => {
+const FeatureCard = ({ icon, title, description, benefits, index }) => {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: 0.3 })
   
@@ -38,24 +34,26 @@ const FeatureCard = ({ icon, title, description, benefits, index }: FeatureCardP
       initial={{ opacity: 0, y: 50 }}
       animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 50 }}
       transition={{ duration: 0.5, delay: index * 0.1 }}
+      whileHover={{ y: -8, transition: { duration: 0.3 } }}
     >
-      <Card className="border-2 hover:border-primary/50 transition-all duration-300 h-full transform hover:-translate-y-2">
+      <Card className="border-2 hover:border-primary/50 transition-all duration-300 h-full transform hover:shadow-xl overflow-hidden group">
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
         <CardHeader className="pb-2">
           <motion.div 
-            className="mb-2 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center"
+            className="mb-4 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-300"
             initial={{ scale: 0 }}
             animate={isInView ? { scale: 1, rotate: [0, 10, 0] } : { scale: 0 }}
             transition={{ duration: 0.5, delay: index * 0.1 + 0.2 }}
           >
             {icon}
           </motion.div>
-          <CardTitle>{title}</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-xl group-hover:text-primary transition-colors duration-300">{title}</CardTitle>
+          <CardDescription className="text-base">
             {description}
           </CardDescription>
         </CardHeader>
-        <CardContent>
-          <ul className="space-y-2 text-sm">
+        <CardContent className="space-y-4">
+          <ul className="space-y-3 text-sm">
             {benefits.map((benefit, i) => (
               <motion.li 
                 key={i} 
@@ -64,11 +62,21 @@ const FeatureCard = ({ icon, title, description, benefits, index }: FeatureCardP
                 animate={isInView ? { opacity: 1, x: 0 } : { opacity: 0, x: -20 }}
                 transition={{ duration: 0.3, delay: index * 0.1 + 0.3 + (i * 0.1) }}
               >
-                <Sparkles className="mr-2 h-4 w-4 text-primary" />
+                <CheckCircle className="mr-2 h-4 w-4 text-primary flex-shrink-0" />
                 <span>{benefit}</span>
               </motion.li>
             ))}
           </ul>
+          
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 10 }}
+            transition={{ duration: 0.3, delay: index * 0.1 + 0.6 }}
+          >
+            <Button variant="ghost" className="p-0 h-auto text-primary group/btn">
+              Learn more <ArrowRight className="ml-1 h-3 w-3 transition-transform duration-300 group-hover/btn:translate-x-1" />
+            </Button>
+          </motion.div>
         </CardContent>
       </Card>
     </motion.div>
@@ -131,7 +139,7 @@ export function FeaturesSection() {
       ]
     },
     {
-      icon: <FileText className="h-6 w-6 text-primary" />,
+      icon: <Star className="h-6 w-6 text-primary" />,
       title: "Cover Letter Generator",
       description: "Create compelling cover letters tailored to each job application",
       benefits: [
@@ -181,7 +189,21 @@ export function FeaturesSection() {
           animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
           transition={{ duration: 0.6 }}
         >
-          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: -10 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+            className="flex items-center justify-center gap-2 mb-4"
+          >
+            <div className="h-px w-12 bg-primary/50"></div>
+            <div className="bg-primary/10 text-primary px-3 py-1 rounded-full text-sm font-medium">
+              <Sparkles className="inline-block h-3.5 w-3.5 mr-1" />
+              <span>AI-Powered Features</span>
+            </div>
+            <div className="h-px w-12 bg-primary/50"></div>
+          </motion.div>
+          
+          <h2 className="text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">
             Powerful Features to Boost Your Career
           </h2>
           <p className="mt-4 text-xl text-muted-foreground max-w-3xl mx-auto">
@@ -201,6 +223,20 @@ export function FeaturesSection() {
             />
           ))}
         </div>
+        
+        <motion.div 
+          className="mt-16 text-center"
+          initial={{ opacity: 0, y: 20 }}
+          animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }}
+          transition={{ duration: 0.6, delay: 0.8 }}
+        >
+          <Button size="lg" className="px-8 relative overflow-hidden group">
+            <span className="relative z-10 flex items-center">
+              <Zap className="mr-2 h-4 w-4" /> Get Started for Free
+            </span>
+            <span className="absolute inset-0 bg-primary/20 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300"></span>
+          </Button>
+        </motion.div>
       </div>
     </section>
   )

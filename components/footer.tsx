@@ -1,4 +1,7 @@
+"use client"
+
 import Link from "next/link"
+import { motion } from "framer-motion"
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react"
 
 export function Footer() {
@@ -8,7 +11,13 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="md:col-span-1">
             <Link href="/" className="inline-block mb-4">
-              <span className="font-bold text-2xl">ResumeAI</span>
+              <motion.span 
+                className="font-bold text-2xl cursor-pointer"
+                whileHover={{ rotate: 360 }}
+                transition={{ duration: 0.8, ease: "easeInOut" }}
+              >
+                ResuMate
+              </motion.span>
             </Link>
             <p className="text-muted-foreground mb-4">
               AI-powered resume building and job matching to accelerate your career growth.
@@ -107,14 +116,14 @@ export function Footer() {
               </li>
               <li className="flex items-center">
                 <Mail className="h-5 w-5 mr-2 text-muted-foreground" />
-                <span className="text-muted-foreground">support@resumeai.com</span>
+                <span className="text-muted-foreground">support@resumate.com</span>
               </li>
             </ul>
           </div>
         </div>
         <div className="border-t mt-12 pt-8 flex flex-col md:flex-row justify-between items-center">
           <p className="text-sm text-muted-foreground mb-4 md:mb-0">
-            © 2025 ResumeAI. All rights reserved.
+            © 2025 ResuMate. All rights reserved.
           </p>
           <div className="flex space-x-6">
             <Link href="/terms" className="text-sm text-muted-foreground hover:text-primary">

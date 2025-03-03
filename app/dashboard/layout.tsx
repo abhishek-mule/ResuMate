@@ -1,13 +1,12 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion, AnimatePresence } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { motion, AnimatePresence, useScroll, useTransform } from "framer-motion"
 import { DashboardNav } from "@/components/dashboard/dashboard-nav"
 import { UserAccountNav } from "@/components/dashboard/user-account-nav"
 import { ModeToggle } from "@/components/mode-toggle"
-import { Menu, X, Bell, Search, Settings } from "lucide-react"
+import { Menu, X, Bell, Search, Zap, Star, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { 
   Sheet,
   SheetContent,
@@ -19,222 +18,316 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu"
-import Image from "next/image"
+import { usePathname } from "next/navigation"
+import { Input } from "@/components/ui/input"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const pathname = usePathname()
   const [isMounted, setIsMounted] = useState(false)
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false)
+  const [isSearchFocused, setIsSearchFocused] = useState(false)
   const [notifications, setNotifications] = useState([
-    { id: 1, title: "New job match found", time: "Just now" },
-    { id: 2, title: "Resume score updated", time: "2 hours ago" },
-    { id: 3, title: "Interview preparation tips", time: "Yesterday" },
+    { id: 1, title: "New job match found", time: "Just now", isRead: false },
+    { id: 2, title: "Resume score updated", time: "2 hours ago", isRead: false },
+    { id: 3, title: "Interview scheduled", time: "Yesterday", isRead: true },
   ])
+  
+  const headerRef = useRef(null)
+  const { scrollY } = useScroll()
+  const headerOpacity = useTransform(scrollY, [0, 50], [1, 0.9])
+  const headerShadow = useTransform(scrollY, [0, 50], ["0 0 0 rgba(0,0,0,0)", "0 4px 20px rgba(0,0,0,0.1)"])
 
   useEffect(() => {
     setIsMounted(true)
+    
+    // Restore sidebar state from localStorage if available
+    const savedSidebarState = localStorage.getItem('sidebarCollapsed')
+    if (savedSidebarState !== null) {
+      setIsSidebarCollapsed(savedSidebarState === 'true')
+    }
   }, [])
+
+  // Close mobile sidebar when route changes
+  useEffect(() => {
+    setIsSidebarOpen(false)
+  }, [pathname])
 
   if (!isMounted) {
     return null
   }
 
-  const user = {
-    name: "John Doe",
-    email: "john@example.com",
-    image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+  const toggleSidebar = () => {
+    const newState = !isSidebarCollapsed
+    setIsSidebarCollapsed(newState)
+    // Save sidebar state to localStorage
+    localStorage.setItem('sidebarCollapsed', String(newState))
   }
 
+  const markAllAsRead = () => {
+    setNotifications(prev => prev.map(notification => ({ ...notification, isRead: true })))
+  }
+
+  const unreadCount = notifications.filter(n => !n.isRead).length
+
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen flex-col">
       <motion.header 
+        ref={headerRef}
         className="sticky top-0 z-40 border-b bg-background/80 backdrop-blur-md"
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ duration: 0.3 }}
+        initial={{ y: -100 }}
+        animate={{ y: 0 }}
+        style={{ 
+          opacity: headerOpacity,
+          boxShadow: headerShadow
+        }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <div className="container flex h-16 items-center px-4">
-          <div className="flex items-center gap-2 md:hidden">
-            <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
-              <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="mr-2 hover:bg-primary/10 transition-colors duration-200">
-                  <Menu className="h-5 w-5" />
-                  <span className="sr-only">Toggle Menu</span>
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-[280px] sm:w-[320px] border-r border-primary/10">
-                <div className="flex h-16 items-center border-b px-4">
-                  <div className="flex items-center gap-2">
-                    <div className="relative h-8 w-8 overflow-hidden">
-                      <img 
-                        src="https://api.deepai.org/job-view-file/1ea346c0-1fd9-4965-a1e7-59013113b3b5/outputs/output.jpg" 
-                        alt="ResumeAI Logo" 
-                        className="h-full w-full object-contain"
-                      />
-                    </div>
-                    <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">ResumeAI</span>
-                  </div>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="ml-auto hover:bg-primary/10 transition-colors duration-200" 
-                    onClick={() => setIsSidebarOpen(false)}
+        <div className="container flex h-16 items-center px-4 sm:px-6">
+          <Sheet open={isSidebarOpen} onOpenChange={setIsSidebarOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" className="md:hidden">
+                <Menu className="h-5 w-5" />
+                <span className="sr-only">Toggle Menu</span>
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-[240px] sm:w-[280px] pr-0">
+              <div className="px-2 py-6 flex flex-col h-full">
+                <div className="flex items-center justify-between mb-6 pl-2">
+                  <motion.span 
+                    className="font-bold text-xl cursor-pointer"
+                    whileHover={{ rotate: 360 }}
+                    transition={{ duration: 0.8, ease: "easeInOut" }}
                   >
+                    ResuMate
+                  </motion.span>
+                  <Button variant="ghost" size="icon" onClick={() => setIsSidebarOpen(false)}>
                     <X className="h-5 w-5" />
                   </Button>
                 </div>
-                <div className="py-6 px-2">
-                  <DashboardNav />
+                <div className="flex-1 overflow-auto">
+                  <DashboardNav toggleSidebar={() => {}} isCollapsed={false} />
                 </div>
-              </SheetContent>
-            </Sheet>
-            <div className="flex items-center gap-2">
-              <div className="relative h-8 w-8 overflow-hidden">
-                <img 
-                  src="https://api.deepai.org/job-view-file/1ea346c0-1fd9-4965-a1e7-59013113b3b5/outputs/output.jpg" 
-                  alt="ResumeAI Logo" 
-                  className="h-full w-full object-contain"
-                />
               </div>
-              <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">ResumeAI</span>
-            </div>
+            </SheetContent>
+          </Sheet>
+          
+          <div className="flex items-center gap-2">
+            <motion.span 
+              className="font-bold text-xl hidden md:inline-block cursor-pointer"
+              whileHover={{ rotate: 360 }}
+              transition={{ duration: 0.8, ease: "easeInOut" }}
+            >
+              ResuMate
+            </motion.span>
           </div>
           
-          <div className="hidden md:flex md:items-center md:gap-3">
-            <div className="relative h-8 w-8 overflow-hidden">
-              <img 
-                src="https://api.deepai.org/job-view-file/1ea346c0-1fd9-4965-a1e7-59013113b3b5/outputs/output.jpg" 
-                alt="ResumeAI Logo" 
-                className="h-full w-full object-contain"
-              />
-            </div>
-            <span className="font-bold text-lg bg-clip-text text-transparent bg-gradient-to-r from-primary to-primary/70">ResumeAI</span>
-          </div>
-          
-          <div className="hidden md:flex mx-auto max-w-md w-full px-8">
-            <div className="relative w-full">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <div className="relative mx-4 flex-1 max-w-md hidden md:block">
+            <div className="relative">
+              <Search className={`absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 ${isSearchFocused ? 'text-primary' : 'text-muted-foreground'} transition-colors duration-200`} />
               <Input 
-                placeholder="Search jobs, resumes, or skills..." 
-                className="pl-9 bg-muted/40 border-muted focus:bg-background transition-all duration-200"
+                placeholder="Search jobs, resumes, skills..." 
+                className={`pl-9 pr-4 py-2 h-9 transition-all duration-300 ${isSearchFocused ? 'ring-2 ring-primary/20 border-primary/50' : ''}`}
+                onFocus={() => setIsSearchFocused(true)}
+                onBlur={() => setIsSearchFocused(false)}
               />
-            </div>
-          </div>
-          
-          <div className="ml-auto flex items-center gap-3">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="relative hover:bg-primary/10 transition-colors duration-200"
-                >
-                  <Bell className="h-5 w-5" />
-                  {notifications.length > 0 && (
-                    <motion.div
-                      initial={{ scale: 0 }}
-                      animate={{ scale: 1 }}
-                      className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center"
-                    >
-                      <Badge className="h-5 w-5 p-0 flex items-center justify-center bg-primary text-primary-foreground">
-                        {notifications.length}
-                      </Badge>
-                    </motion.div>
-                  )}
-                  
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 p-0 overflow-hidden border border-primary/10">
-                <div className="flex items-center justify-between p-4 border-b bg-muted/30">
-                  <span className="font-medium">Notifications</span>
-                  <Button variant="ghost" size="sm" className="h-auto p-0 text-sm hover:text-primary transition-colors">
-                    Mark all as read
-                  </Button>
+              {isSearchFocused && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Badge variant="outline" className="text-xs bg-muted/50">
+                    ⌘ K
+                  </Badge>
                 </div>
-                <div className="max-h-96 overflow-auto">
-                  {notifications.map((notification, index) => (
-                    <DropdownMenuItem 
-                      key={notification.id} 
-                      className="p-4 cursor-pointer hover:bg-muted/50 transition-colors duration-200 border-b border-border/50 last:border-0"
-                    >
-                      <div className="flex gap-3 items-start">
-                        <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Bell className="h-4 w-4 text-primary" />
-                        </div>
-                        <div className="flex flex-col gap-1">
-                          <span className="font-medium">{notification.title}</span>
-                          <span className="text-xs text-muted-foreground">{notification.time}</span>
-                        </div>
-                      </div>
-                    </DropdownMenuItem>
+              )}
+            </div>
+            
+            {isSearchFocused && (
+              <motion.div 
+                className="absolute top-full left-0 right-0 mt-1 bg-background border rounded-md shadow-lg z-50 p-2"
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+              >
+                <div className="text-xs text-muted-foreground mb-2 px-2">Recent Searches</div>
+                <div className="space-y-1">
+                  {["Frontend Developer", "React Jobs", "Resume Templates"].map((item, i) => (
+                    <div key={i} className="flex items-center px-2 py-1.5 rounded-md hover:bg-muted cursor-pointer">
+                      <Search className="h-3.5 w-3.5 text-muted-foreground mr-2" />
+                      <span className="text-sm">{item}</span>
+                    </div>
                   ))}
                 </div>
-                <div className="p-3 border-t bg-muted/30 text-center">
-                  <Button variant="ghost" size="sm" className="w-full text-sm hover:bg-primary/10 transition-colors">
+              </motion.div>
+            )}
+          </div>
+          
+          <div className="flex-1 flex justify-end items-center gap-3">
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hidden md:flex">
+                    <HelpCircle className="h-5 w-5 text-muted-foreground" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Help & Resources</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button variant="ghost" size="icon" className="hidden md:flex relative overflow-hidden group">
+                    <Star className="h-5 w-5 text-muted-foreground group-hover:text-amber-500 transition-colors duration-300" />
+                    <span className="absolute inset-0 bg-amber-500/10 transform scale-0 group-hover:scale-100 rounded-full transition-transform duration-300"></span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Upgrade to Pro</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="relative">
+                  <Bell className="h-5 w-5" />
+                  <span className="sr-only">Notifications</span>
+                  {unreadCount > 0 && (
+                    <motion.span 
+                      className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ 
+                        type: "spring", 
+                        stiffness: 500, 
+                        damping: 15 
+                      }}
+                    >
+                      {unreadCount}
+                    </motion.span>
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-[320px]">
+                <div className="flex items-center justify-between py-2 px-4 border-b">
+                  <span className="font-medium">Notifications</span>
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="ml-auto">
+                      {unreadCount} new
+                    </Badge>
+                    <Button variant="ghost" size="sm" className="h-8 px-2 text-xs" onClick={markAllAsRead}>
+                      Mark all read
+                    </Button>
+                  </div>
+                </div>
+                <div className="max-h-[300px] overflow-y-auto">
+                  <AnimatePresence>
+                    {notifications.map((notification, index) => (
+                      <motion.div 
+                        key={notification.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, height: 0 }}
+                        transition={{ delay: index * 0.1 }}
+                        className={`py-2 px-4 border-b last:border-0 hover:bg-muted/50 cursor-pointer relative ${notification.isRead ? 'opacity-70' : ''}`}
+                      >
+                        <div className="flex items-start gap-3">
+                          <div className="flex-shrink-0 mt-1">
+                            <Avatar className="h-8 w-8">
+                              <AvatarImage src={`https://avatar.vercel.sh/${notification.id}.png`} />
+                              <AvatarFallback>N</AvatarFallback>
+                            </Avatar>
+                          </div>
+                          <div className="flex-1">
+                            <div className="flex justify-between items-start">
+                              <span className={`font-medium ${notification.isRead ? '' : 'text-primary'}`}>{notification.title}</span>
+                              <span className="text-xs text-muted-foreground">{notification.time}</span>
+                            </div>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              {notification.id === 1 && "We found a new job that matches your skills and experience."}
+                              {notification.id === 2 && "Your resume score has been updated based on recent changes."}
+                              {notification.id === 3 && "Your interview with TechCorp has been scheduled for tomorrow."}
+                            </p>
+                          </div>
+                        </div>
+                        {!notification.isRead && (
+                          <div className="absolute left-1.5 top-1/2 -translate-y-1/2 w-1.5 h-1.5 rounded-full bg-primary"></div>
+                        )}
+                      </motion.div>
+                    ))}
+                  </AnimatePresence>
+                </div>
+                <div className="py-2 px-4 border-t">
+                  <Button variant="ghost" size="sm" className="w-full justify-center">
                     View all notifications
                   </Button>
                 </div>
               </DropdownMenuContent>
             </DropdownMenu>
             
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              className="hidden md:flex hover:bg-primary/10 transition-colors duration-200"
-            >
-              <Settings className="h-5 w-5" />
-            </Button>
-            
             <ModeToggle />
             
-            <UserAccountNav user={user} />
+            <UserAccountNav 
+              user={{
+                name: "John Doe",
+                email: "john@example.com",
+                image: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80"
+              }}
+            />
           </div>
         </div>
       </motion.header>
       
-      <div className="flex flex-1">
-        <AnimatePresence>
-          <motion.aside 
-            className="hidden md:flex md:w-64 md:flex-col md:border-r border-primary/10"
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1 }}
-            transition={{ duration: 0.3, delay: 0.1 }}
-          >
-            <div className="flex flex-col gap-4 p-4 h-full">
-              <div className="py-2">
-                <DashboardNav />
-              </div>
-              
-              <div className="mt-auto">
-                <div className="rounded-lg border border-primary/10 bg-muted/30 p-4">
-                  <div className="flex items-center gap-2 mb-3">
-                    <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Settings className="h-4 w-4 text-primary" />
-                    </div>
-                    <h4 className="font-medium">Pro Tips</h4>
-                  </div>
-                  <p className="text-sm text-muted-foreground mb-3">
-                    Complete your profile to get better job matches and increase your visibility to employers.
-                  </p>
-                  <Button size="sm" variant="outline" className="w-full border-primary/20 hover:bg-primary/10 transition-colors">
-                    Update Profile
-                  </Button>
-                </div>
-              </div>
-            </div>
-          </motion.aside>
-        </AnimatePresence>
+      <div className="flex-1 flex flex-col md:flex-row">
+        <motion.div 
+          className="hidden md:flex flex-col border-r bg-muted/40 p-4 relative"
+          initial={{ x: -240, opacity: 0 }}
+          animate={{ 
+            x: 0, 
+            opacity: 1,
+            width: isSidebarCollapsed ? 80 : 240,
+            transition: { duration: 0.3 }
+          }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+        >
+          <DashboardNav isCollapsed={isSidebarCollapsed} toggleSidebar={toggleSidebar} />
+        </motion.div>
         
-        <main className="flex-1 bg-muted/10">
-          <div className="container p-4 md:p-8">
-            {children}
-          </div>
-        </main>
+        <motion.div 
+          className="flex-1 p-4 md:p-6"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2, duration: 0.5 }}
+          key={pathname}
+        >
+          {children}
+        </motion.div>
       </div>
+
+      <motion.div
+        className="fixed bottom-4 right-4 z-50"
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ delay: 1, duration: 0.3, type: "spring" }}
+      >
+        <Button 
+          size="lg" 
+          className="h-12 w-12 rounded-full shadow-lg bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary p-0"
+        >
+          <Zap className="h-5 w-5" />
+          <span className="sr-only">AI Assistant</span>
+        </Button>
+      </motion.div>
     </div>
   )
 }
