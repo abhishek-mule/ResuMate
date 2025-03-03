@@ -18,8 +18,17 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card"
+import { ReactNode } from "react" // Add this import
 
-const FeatureCard = ({ icon, title, description, benefits, index }) => {
+interface FeatureCardProps {
+  icon: ReactNode
+  title: string
+  description: string
+  benefits: string[]
+  index: number
+}
+
+const FeatureCard = ({ icon, title, description, benefits, index }: FeatureCardProps) => {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, amount: 0.3 })
   

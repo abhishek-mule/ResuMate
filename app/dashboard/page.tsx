@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+
 import { motion } from "framer-motion"
 import { DashboardShell } from "@/components/dashboard/dashboard-shell"
 import { DashboardHeader } from "@/components/dashboard/dashboard-header"
@@ -164,6 +165,15 @@ export default function DashboardPage() {
           </motion.div>
           <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="transition-all duration-300">
             <ImprovementSuggestions />
+          </motion.div>
+          <motion.div variants={itemVariants} whileHover={{ y: -5 }} className="transition-all duration-300">
+            <FeatureCard
+              icon={<SomeIcon />}
+              title="Feature Title"
+              description="Feature Description"
+              benefits={["Benefit 1", "Benefit 2"]}
+              index={0}
+            />
           </motion.div>
         </motion.div>
       )}
